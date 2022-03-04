@@ -17,6 +17,47 @@ type Transaction struct {
 	amount    int
 }
 
+type PopulationFitnessStruct struct {
+	index   int
+	fitness int
+}
+
+type Chromosome []int
+type Population []Chromosome
+type PopulationFitness []int
+type PopulationFitnessWithIndex []PopulationFitnessStruct
+
+func generateChromosome(genomeLength int) Chromosome {
+	chromosome := Chromosome{}
+
+	totalOneCount := 0
+
+	for totalOneCount == 0 {
+		totalOneCount = 0
+		for index := 0; index < genomeLength; index += 1 {
+			genome := rand.Intn(2)
+
+			if genome == 1 {
+				totalOneCount += 1
+			}
+
+			chromosome = append(chromosome, genome)
+		}
+	}
+
+	return chromosome
+}
+
+func generatePopulation(populationSize int, genomeLength int) Population {
+	population := Population{}
+
+	for index := 0; index < populationSize; index += 1 {
+		population = append(population, generateChromosome(genomeLength))
+	}
+
+	return population
+}
+
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano()) // always seed random!
 
@@ -41,6 +82,12 @@ func main() {
 			transaction_amount, _ := strconv.Atoi(splitted[1])
 			transactions = append(transactions, Transaction{direction: splitted[0], amount: transaction_amount})
 		}
+
+		totalChromosomes := 10
+
+		initialPopulation := generatePopulation(totalChromosomes, total_transactions)
+
+		fmt.Println(initialPopulation)
 
 		wr.NewChooser(
 			wr.Choice{Item: "🍒", Weight: 0},
