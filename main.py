@@ -15,7 +15,7 @@ for line_num in range(total_transactions):
 
 Chromosome = List[int]
 Population = List[Chromosome]
-PopulationFitness = List[Tuple[int, int]]
+PopulationFitness = List[int]
 
 def generate_chromosome(genome_length: int) -> Chromosome:
   chromosome: List[int] = []
@@ -23,12 +23,12 @@ def generate_chromosome(genome_length: int) -> Chromosome:
 
   while (total_one_count == 0):
     total_one_count = 0
+    chromosome = []
     for _ in range(genome_length):
       genome = randint(0, 1)
-      if (genome == 1) :
+      if (genome == 1):
         total_one_count +=1
       chromosome.append(genome)
-
   return chromosome
 
 
@@ -53,12 +53,10 @@ def generate_population(population_size: int, genome_length: int) -> Population:
   return population
 
 def selection(population: Population, population_with_fitness: PopulationFitness):
-  return choices(population = population, weights = [
-    fitness[1] for fitness in population_with_fitness
-  ])
+  return choices(population = population, weights = [1 if fitness == 0 else (1 / fitness) for fitness in population_with_fitness])[0]
 
 def crossover(parent1: Chromosome, parent2: Chromosome) -> Chromosome:
-  random_genome = randint(0, len(parent1))
+  random_genome = randint(0, len(parent1) - 1)
   return parent1[0: random_genome] + parent2[random_genome:]
 
 def mutation(chromosome: Chromosome, mutation_threshold: int = 0.3):
@@ -76,33 +74,29 @@ def genetic_algorithm(population: Population, total_generations: int, fitness_ta
     population_with_fitness: PopulationFitness = []
     next_population = []
 
-    for chromosome_num, chromosome in enumerate(population):
-      population_with_fitness.append((chromosome_num, fitness(chromosome)))
+    for chromosome in population:
+      population_with_fitness.append(fitness(chromosome))
 
-    # Sort the population based on the ascending order of fitness value
-    population_with_fitness = sorted(population_with_fitness, key = lambda fitness: fitness[1])
-    
-    if (population_with_fitness[0][1] == fitness_target):
-      found_chromosome_index = population_with_fitness[0][0]
+    if (sorted(population_with_fitness)[0] == fitness_target):
+      found_chromosome_index = population_with_fitness.index(0)
       break
     
-    # First two are the best fit chromosome from the previous generation
     for _ in population:
       parent1 = selection(population, population_with_fitness)
       parent2 = selection(population, population_with_fitness)
       child = crossover(parent1, parent2)
+      while "".join(str(genome) for genome in child) == "0" * len(population[0]):
+        child = crossover(parent1, parent2)
       mutation(child)
-      next_population+=child
+      next_population.append(child)
     population = next_population
-
 
   return -1 if found_chromosome_index == -1 else "".join(str(genome) for genome in population[found_chromosome_index])
 
 def main():
-  start_population = 10
-  total_generations = 100
+  start_population = 100
+  total_generations = 50
   initial_population = generate_population(start_population, total_transactions)
   target_chromosome = genetic_algorithm(initial_population, total_generations, 0)
   print(target_chromosome)
-
 main()
