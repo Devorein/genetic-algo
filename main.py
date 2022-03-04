@@ -1,5 +1,5 @@
 import enum
-from random import randint
+from random import choices, randint
 from typing import List, Tuple
 
 # Driver code
@@ -19,7 +19,7 @@ generation_limit = 1
 
 Chromosome = List[int]
 Population = List[Chromosome]
-
+PopulationFitness = List[Tuple[int, int]]
 
 def generate_chromosome(genome_length: int) -> Chromosome:
   chromosome: List[int] = []
@@ -50,14 +50,37 @@ def generate_population(population_size: int, genome_length: int, mutation_thres
 
   return population
 
-def genetic_algorithm(generation_limit: int, population_size: int, genome_length: int, mutation_threshold: int):
+def selection(population: Population, population_with_fitness: PopulationFitness):
+  return choices(population = population, weights = [
+    fitness[1] for fitness in population_with_fitness
+  ], k = 2)
+
+def genetic_algorithm(population: Population, generation_limit: int):
+  next_population: Population = []
   for generation_num in range(generation_limit):
-    population = generate_population(population_size, genome_length, mutation_threshold)
-    population_with_fitness: List[Tuple[int, int]] = []
+    population_with_fitness: PopulationFitness = []
 
     for chromosome_num, chromosome in enumerate(population):
       population_with_fitness.append((chromosome_num, fitness(chromosome)))
 
+    # Sort the population based on the ascending order of fitness value
+    population_with_fitness = sorted(population_with_fitness, key = lambda fitness: fitness[1])
     print(population_with_fitness)
 
-genetic_algorithm(generation_limit, start_population, total_transactions, mutation_threshold)
+    # keep the first two parent of the current generation based on their fitness value
+    next_population = [
+      population[population_with_fitness[0][0]],
+      population[population_with_fitness[1][0]],
+    ]
+    
+    # Loop through half of the population as in each iteration two parents will be selected
+    for i in range(int(len(population) / 2) - 1):
+      parents = selection(population, population_with_fitness)
+      
+
+def main():
+  initial_population = generate_population(start_population, total_transactions, mutation_threshold)
+  genetic_algorithm(initial_population, generation_limit)
+  
+
+main()
