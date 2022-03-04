@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -26,6 +27,8 @@ type Chromosome []int
 type Population []Chromosome
 type PopulationFitness []int
 type PopulationFitnessWithIndex []PopulationFitnessStruct
+
+var transactions = []Transaction{}
 
 func generateChromosome(genomeLength int) Chromosome {
 	chromosome := Chromosome{}
@@ -58,6 +61,24 @@ func generatePopulation(populationSize int, genomeLength int) Population {
 	return population
 }
 
+func fitness(chromosome Chromosome) int {
+	fitness_value := 0
+
+	for index := 0; index < len(chromosome); index += 1 {
+		if chromosome[index] == 1 {
+			transaction := transactions[index]
+
+			if transaction.direction == "l" {
+				fitness_value -= transaction.amount
+			} else {
+				fitness_value += transaction.amount
+			}
+		}
+	}
+
+	return int(math.Abs(float64(fitness_value)))
+}
+
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano()) // always seed random!
 
@@ -73,9 +94,6 @@ func main() {
 		lines := strings.Split(string(textContent), "\r\n")
 
 		total_transactions, _ := strconv.Atoi(lines[0])
-
-		transactions := []Transaction{}
-
 		for index := 0; index < total_transactions; index++ {
 			transaction := lines[index+1]
 			splitted := strings.Split(transaction, " ")
