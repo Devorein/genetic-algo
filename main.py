@@ -1,5 +1,5 @@
 import enum
-from random import choices, randint
+from random import choices, randint, random, randrange
 from typing import List, Tuple
 
 # Driver code
@@ -59,13 +59,21 @@ def crossover(parent1: Chromosome, parent2: Chromosome) -> Chromosome:
   random_genome = randint(0, len(parent1))
   return parent1[0: random_genome] + parent2[random_genome:]
 
+def mutation(chromosome: Chromosome):
+  random_index1 = randrange(len(chromosome))
+  random_index2 = randrange(len(chromosome))
+
+  if (random() > mutation_threshold):
+    random_index1_value = chromosome[random_index1]
+    chromosome[random_index1] = chromosome[random_index2]
+    chromosome[random_index2] = random_index1_value
 
 def genetic_algorithm(population: Population, total_generations: int):
-  next_population: Population = population
+  next_population: Population = []
   for _ in range(total_generations):
     population_with_fitness: PopulationFitness = []
 
-    for chromosome_num, chromosome in enumerate(next_population):
+    for chromosome_num, chromosome in enumerate(population):
       population_with_fitness.append((chromosome_num, fitness(chromosome)))
 
     # Sort the population based on the ascending order of fitness value
@@ -83,12 +91,15 @@ def genetic_algorithm(population: Population, total_generations: int):
       parent1 = selection(population, population_with_fitness)
       parent2 = selection(population, population_with_fitness)
       child = crossover(parent1, parent2)
+      mutation(child)
       next_population+=child
-      
+    population = next_population
+
+  return next_population
 
 def main():
   initial_population = generate_population(start_population, total_transactions)
-  genetic_algorithm(initial_population, total_generations)
-  
+  final_population = genetic_algorithm(initial_population, total_generations)
+  print(final_population)
 
 main()
