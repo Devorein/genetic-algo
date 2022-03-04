@@ -1,4 +1,3 @@
-import enum
 from random import choices, randint, random, randrange
 from typing import List, Tuple
 
@@ -7,7 +6,7 @@ lines = [line.replace("\n", "") for line in open("input.txt").readlines()]
 
 total_transactions = int(lines[0])
 
-transactions: List[List[Tuple[int, int]]] = []
+transactions: List[Tuple[int, int]] = []
 
 for line_num in range(total_transactions):
   # Split each line by space
