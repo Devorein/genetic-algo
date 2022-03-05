@@ -79,6 +79,25 @@ func fitness(chromosome Chromosome) int {
 	return int(math.Abs(float64(fitness_value)))
 }
 
+func selection(population Population, populationWithFitness PopulationFitness) Chromosome {
+	choices := []wr.Choice{}
+
+	for index := 0; index < len(population); index += 1 {
+		weight := uint(0)
+		if populationWithFitness[index] == 0 {
+			weight = 1
+		} else {
+			weight = uint(populationWithFitness[index])
+		}
+		choices = append(choices, wr.Choice{
+			Weight: weight,
+		})
+	}
+
+	chooser, _ := wr.NewChooser(choices)
+
+}
+
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano()) // always seed random!
 

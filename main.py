@@ -67,11 +67,11 @@ def generate_population(population_size: int, genome_length: int) -> Population:
   return population
 
 # Randomly select one chromosome from population based on weights provided by fitness calculation
-def selection(population: Population, population_with_fitness: PopulationFitness):
+def selection(population: Population, weights: List[int]):
   # The weight is between 0 and 1
   # If the fitness value is 0, that means its weight should be maximum, ie 1
   # Else if its > 0, then its weight would be inverse of the value, to decrease its weight 
-  return choices(population = population, weights = [1 if fitness == 0 else (1 / fitness) for fitness in population_with_fitness])[0]
+  return choices(population = population, weights = weights)[0]
 
 def crossover(parent1: Chromosome, parent2: Chromosome) -> Chromosome:
   # Generate a random number between 0 and total genome of the chromosome 
@@ -103,10 +103,16 @@ def genetic_algorithm(population: Population, total_generations: int = 1, fitnes
     # This is used to get the best two chromosome in each generation and to enable elitism
     population_with_fitness_and_index = PopulationFitnessWithIndex = []
 
+    # Store the max fitness value, this will be used to calculate the weights
+    max_fitness_value = 0
+
     # For each chromosome in population
     for chromosome_num, chromosome in enumerate(population):
       # Calculate its fitness value
       fitness_value = fitness(chromosome)
+
+      if (fitness_value > max_fitness_value):
+        max_fitness_value = fitness_value
       # Append the fitness value
       population_with_fitness.append(fitness_value)
       # Append the fitness value along with the index of the chromosome
@@ -127,12 +133,13 @@ def genetic_algorithm(population: Population, total_generations: int = 1, fitnes
       population[sorted_population_with_fitness_and_index[0][0]],
       population[sorted_population_with_fitness_and_index[1][0]],
     ]
-    
+
+    weights = [max_fitness_value - fitness_value for fitness_value in population_with_fitness]
     # Reduce looping by two as they are the elite of the population
     for _ in range(len(population) - 2):
       # Select two parents from population, the fitness would be used as weights
-      parent1 = selection(population, population_with_fitness)
-      parent2 = selection(population, population_with_fitness)
+      parent1 = selection(population, weights)
+      parent2 = selection(population, weights)
       # Create the child by crossing between the two parents
       child = crossover(parent1, parent2)
       # While the child only consists of 0, cross over the child again, until its not
@@ -151,9 +158,9 @@ def main():
   # Probability of mutation
   mutation_threshold = 0.5
   # Total chromosome in a single population
-  total_chromosomes = 100
+  total_chromosomes = 50
   # Total number of generation
-  total_generations = 50
+  total_generations = 10
   # Generate the initial population, total_transaction would be the number of genome of a chromosome
   initial_population = generate_population(total_chromosomes, total_transactions)
   # Get the target chromosome, if not -1 is returned, 0 is used to indicated that fitness target is 0
