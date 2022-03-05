@@ -79,23 +79,19 @@ func fitness(chromosome Chromosome) int {
 	return int(math.Abs(float64(fitness_value)))
 }
 
-func selection(population Population, populationWithFitness PopulationFitness) Chromosome {
+func selection(population Population, weights []uint) Chromosome {
 	choices := []wr.Choice{}
 
 	for index := 0; index < len(population); index += 1 {
-		weight := uint(0)
-		if populationWithFitness[index] == 0 {
-			weight = 1
-		} else {
-			weight = uint(populationWithFitness[index])
-		}
 		choices = append(choices, wr.Choice{
-			Weight: weight,
+			Weight: weights[index],
+			Item:   population[index],
 		})
 	}
 
-	chooser, _ := wr.NewChooser(choices)
+	chooser, _ := wr.NewChooser(choices...)
 
+	return chooser.Pick().(Chromosome)
 }
 
 func main() {
@@ -125,13 +121,5 @@ func main() {
 		initialPopulation := generatePopulation(totalChromosomes, total_transactions)
 
 		fmt.Println(initialPopulation)
-
-		wr.NewChooser(
-			wr.Choice{Item: "🍒", Weight: 0},
-			wr.Choice{Item: "🍋", Weight: 1},
-			wr.Choice{Item: "🍊", Weight: 1},
-			wr.Choice{Item: "🍉", Weight: 3},
-			wr.Choice{Item: "🥑", Weight: 5},
-		)
 	}
 }

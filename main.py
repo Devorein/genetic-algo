@@ -67,7 +67,7 @@ def generate_population(population_size: int, genome_length: int) -> Population:
   return population
 
 # Randomly select one chromosome from population based on weights provided by fitness calculation
-def selection(population: Population, weights: List[int]):
+def selection(population: Population, weights: List[int]) -> Chromosome:
   # The weight is between 0 and 1
   # If the fitness value is 0, that means its weight should be maximum, ie 1
   # Else if its > 0, then its weight would be inverse of the value, to decrease its weight 
