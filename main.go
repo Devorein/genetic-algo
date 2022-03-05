@@ -109,6 +109,17 @@ func crossover(parent1 Chromosome, parent2 Chromosome) Chromosome {
 	return chromosome
 }
 
+func mutation(chromosome Chromosome, mutationThreshold float32) {
+	randomIndex1 := rand.Intn(len(chromosome))
+	randomIndex2 := rand.Intn(len(chromosome))
+
+	if rand.Float32() > mutationThreshold {
+		randomIndex1Value := chromosome[randomIndex1]
+		chromosome[randomIndex1] = chromosome[randomIndex2]
+		chromosome[randomIndex2] = randomIndex1Value
+	}
+}
+
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano()) // always seed random!
 
