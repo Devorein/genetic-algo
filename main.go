@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -79,7 +80,7 @@ func fitness(chromosome Chromosome) int {
 	return int(math.Abs(float64(fitness_value)))
 }
 
-func selection(population Population, weights []uint) Chromosome {
+func selection(population Population, weights []uint, totalChoices uint) []Chromosome {
 	choices := []wr.Choice{}
 
 	for index := 0; index < len(population); index += 1 {
@@ -91,7 +92,13 @@ func selection(population Population, weights []uint) Chromosome {
 
 	chooser, _ := wr.NewChooser(choices...)
 
-	return chooser.Pick().(Chromosome)
+	chosenChromosomes := []Chromosome{}
+
+	for index := 0; index < int(totalChoices); index += 1 {
+		chosenChromosomes = append(chosenChromosomes, chooser.Pick().(Chromosome))
+	}
+
+	return chosenChromosomes
 }
 
 func crossover(parent1 Chromosome, parent2 Chromosome) Chromosome {
@@ -118,6 +125,84 @@ func mutation(chromosome Chromosome, mutationThreshold float32) {
 		chromosome[randomIndex1] = chromosome[randomIndex2]
 		chromosome[randomIndex2] = randomIndex1Value
 	}
+}
+
+func geneticAlgorithm(population Population, totalGenerations int, fitnessTarget int, mutationThreshold float32) string {
+	targetChromosome := Chromosome{}
+
+	for generationNumber := 0; generationNumber < totalGenerations; generationNumber += 1 {
+		populationWithFitness := PopulationFitness{}
+		populationWithFitnessAndIndex := PopulationFitnessWithIndex{}
+		maxFitnessValue := 0
+
+		for chromosomeNumber := 0; chromosomeNumber < len(population); chromosomeNumber += 1 {
+			chromosome := population[chromosomeNumber]
+			fitnessValue := fitness(chromosome)
+
+			if fitnessValue > maxFitnessValue {
+				maxFitnessValue = fitnessValue
+			}
+
+			populationWithFitness = append(populationWithFitness, fitnessValue)
+			populationWithFitnessAndIndex = append(populationWithFitnessAndIndex, PopulationFitnessStruct{
+				index:   chromosomeNumber,
+				fitness: fitnessValue,
+			})
+		}
+
+		sort.Slice(populationWithFitnessAndIndex[:], func(i, j int) bool {
+			return populationWithFitnessAndIndex[i].fitness < populationWithFitnessAndIndex[j].fitness
+		})
+
+		if populationWithFitnessAndIndex[0].fitness == fitnessTarget {
+			targetChromosome = population[populationWithFitnessAndIndex[0].index]
+			break
+		}
+
+		nextPopulation := Population{
+			population[populationWithFitnessAndIndex[0].index],
+			population[populationWithFitnessAndIndex[1].index],
+		}
+
+		weights := []uint{}
+
+		for index := 0; index < len(populationWithFitness); index += 1 {
+			weights = append(weights, uint(maxFitnessValue-populationWithFitness[index]))
+		}
+
+		for index := 0; index < len(population)-2; index += 1 {
+			parents := selection(population, weights, 2)
+			child := crossover(parents[0], parents[1])
+
+			genomeSummation := 0
+
+			for genomeNumber := 0; genomeNumber < len(child); genomeNumber += 1 {
+				genomeSummation += child[genomeNumber]
+			}
+
+			for genomeSummation == 0 {
+				child = crossover(parents[0], parents[1])
+			}
+
+			mutation(child, mutationThreshold)
+
+			nextPopulation = append(nextPopulation, child)
+		}
+
+		population = nextPopulation
+	}
+
+	if len(targetChromosome) == 0 {
+		return "-1"
+	}
+
+	stringifiedChromosome := ""
+
+	for genomeNumber := 0; genomeNumber < len(targetChromosome); genomeNumber += 1 {
+		stringifiedChromosome = stringifiedChromosome + string(targetChromosome[genomeNumber])
+	}
+
+	return stringifiedChromosome
 }
 
 func main() {

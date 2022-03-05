@@ -101,7 +101,7 @@ def genetic_algorithm(population: Population, total_generations: int = 1, fitnes
     population_with_fitness: PopulationFitness = []
     # Fitness value of all chromosomes, along with their index in the population
     # This is used to get the best two chromosome in each generation and to enable elitism
-    population_with_fitness_and_index = PopulationFitnessWithIndex = []
+    population_with_fitness_and_index: PopulationFitnessWithIndex = []
 
     # Store the max fitness value, this will be used to calculate the weights
     max_fitness_value = 0
