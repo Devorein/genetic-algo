@@ -38,6 +38,7 @@ func generateChromosome(genomeLength int) Chromosome {
 
 	for totalOneCount == 0 {
 		totalOneCount = 0
+		chromosome = Chromosome{}
 		for index := 0; index < genomeLength; index += 1 {
 			genome := rand.Intn(2)
 
@@ -137,6 +138,7 @@ func geneticAlgorithm(population Population, totalGenerations int, fitnessTarget
 
 		for chromosomeNumber := 0; chromosomeNumber < len(population); chromosomeNumber += 1 {
 			chromosome := population[chromosomeNumber]
+
 			fitnessValue := fitness(chromosome)
 
 			if fitnessValue > maxFitnessValue {
@@ -181,7 +183,11 @@ func geneticAlgorithm(population Population, totalGenerations int, fitnessTarget
 			}
 
 			for genomeSummation == 0 {
+				genomeSummation = 0
 				child = crossover(parents[0], parents[1])
+				for genomeNumber := 0; genomeNumber < len(child); genomeNumber += 1 {
+					genomeSummation += child[genomeNumber]
+				}
 			}
 
 			mutation(child, mutationThreshold)
@@ -199,7 +205,7 @@ func geneticAlgorithm(population Population, totalGenerations int, fitnessTarget
 	stringifiedChromosome := ""
 
 	for genomeNumber := 0; genomeNumber < len(targetChromosome); genomeNumber += 1 {
-		stringifiedChromosome = stringifiedChromosome + string(targetChromosome[genomeNumber])
+		stringifiedChromosome = stringifiedChromosome + fmt.Sprint(targetChromosome[genomeNumber])
 	}
 
 	return stringifiedChromosome
@@ -219,19 +225,28 @@ func main() {
 	} else {
 		lines := strings.Split(string(textContent), "\r\n")
 
-		total_transactions, _ := strconv.Atoi(lines[0])
-		for index := 0; index < total_transactions; index++ {
+		totalTransactions, _ := strconv.Atoi(lines[0])
+		for index := 0; index < totalTransactions; index++ {
 			transaction := lines[index+1]
 			splitted := strings.Split(transaction, " ")
 			transaction_amount, _ := strconv.Atoi(splitted[1])
 			transactions = append(transactions, Transaction{direction: splitted[0], amount: transaction_amount})
 		}
 
-		totalChromosomes := 10
-		totalGenerations := 10
+		totalChromosomes := 50
+		totalGenerations := 25
+		mutationThreshold := float32(0.5)
 
-		initialPopulation := generatePopulation(totalChromosomes, total_transactions)
+		totalRuns := 10
+		totalCorrect := 0
+		for runCount := 0; runCount < totalRuns; runCount += 1 {
+			initialPopulation := generatePopulation(totalChromosomes, totalTransactions)
+			targetChromosome := geneticAlgorithm(initialPopulation, totalGenerations, 0, mutationThreshold)
+			if targetChromosome == "1011010" {
+				totalCorrect += 1
+			}
+		}
 
-		fmt.Println(initialPopulation)
+		fmt.Println((float64(totalCorrect) / float64(totalRuns)) * 100)
 	}
 }
