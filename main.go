@@ -94,6 +94,21 @@ func selection(population Population, weights []uint) Chromosome {
 	return chooser.Pick().(Chromosome)
 }
 
+func crossover(parent1 Chromosome, parent2 Chromosome) Chromosome {
+	randomGenome := rand.Intn(len(parent1))
+	chromosome := Chromosome{}
+	parent1Slice := parent1[0:randomGenome]
+	parent2Slice := parent2[randomGenome:]
+	for index := 0; index < len(parent1Slice); index += 1 {
+		chromosome = append(chromosome, parent1Slice[index])
+	}
+
+	for index := 0; index < len(parent2Slice); index += 1 {
+		chromosome = append(chromosome, parent2Slice[index])
+	}
+	return chromosome
+}
+
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano()) // always seed random!
 
@@ -117,6 +132,7 @@ func main() {
 		}
 
 		totalChromosomes := 10
+		totalGenerations := 10
 
 		initialPopulation := generatePopulation(totalChromosomes, total_transactions)
 
